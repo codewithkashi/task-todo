@@ -84,10 +84,11 @@ async function main() {
       data: area,
     });
   }
+  console.log("Database seeded successfully!");
 }
 main()
   .catch((e) => {
-    console.error("seeding database:", e);
+    console.error("Error seeding database:", e);
     process.exit(1);
   })
   .finally(async () => {
