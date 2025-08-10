@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  username    String      @unique
+  password    String
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  accountType AccountType
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  businessName       String?
+  registrationNumber String?
+  country            String?
+  city               String?
+  area               String?
+  tradeLicenseUrl    String?
+
+  monthlySpendingLimit Int?
+  promotionalOffers    Boolean @default(false)
+
+  products              Product[]
+  interests             Interest[]
+  verificationDocuments VerificationDocument[]
+
+  @@map("users")
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  price         Decimal  @db.Decimal(10, 2)
+  stockQuantity Int
+  userId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+model Interest {
+  id     String @id @default(cuid())
+  name   String
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([name, userId])
+  @@map("interests")
+}
+
+model VerificationDocument {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileUrl   String
+  fileType  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verification_documents")
+}
+
+model Country {
+  id   String @id
+  name String
+  code String
+
+  cities City[]
+
+  @@map("countries")
+}
+
+model City {
+  id        String @id
+  name      String
+  countryId String
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  areas Area[]
+
+  @@map("cities")
+}
+
+model Area {
+  id     String @id
+  name   String
+  cityId String
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@map("areas")
+}
+
+enum AccountType {
+  SELLER
+  BUYER
+}
